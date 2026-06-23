@@ -16,14 +16,15 @@ tree with rich-text and math rendered in place.
 
 ## Running it
 
-ES modules require an HTTP origin in most browsers, so serve the directory:
+Just open `index.html` in a browser — double-click it, or:
 
 ```bash
-python3 -m http.server 8765
-# then open http://127.0.0.1:8765/
+open index.html       # macOS
+xdg-open index.html   # Linux
 ```
 
-Any static server works — `npx serve`, `caddy file-server`, etc.
+No server, no install step. If you'd rather serve over HTTP it works too
+(`python3 -m http.server`, `npx serve`, etc.), but it isn't required.
 
 ## Repo layout
 
