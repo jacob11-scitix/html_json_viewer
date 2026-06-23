@@ -78,6 +78,17 @@ When adding a new module:
   - `localStorage` is wrapped in try/catch (Safari may block on `file://`).
   - Clipboard copy falls back to `document.execCommand('copy')` when the
     async Clipboard API is unavailable.
+- **Input sanitization (Python-emitted JSON).** `parser.js` retries with
+  `NaN` / `Infinity` / `-Infinity` replaced by `null` when strict `JSON.parse`
+  fails — Python's `json.dump` emits those by default. The replacement walks
+  the text character-by-character to skip over string literals. Do not
+  replace it with a naive `/NaN/g`-style regex; that would corrupt user
+  prose that happens to contain the word "NaN".
+- **Default fold state.** Non-root tree nodes start collapsed. `tree.js`
+  threads a `depth` argument through `buildNode` for this. Keep the root
+  expanded (so first paint shows the top-level shape) and everything below
+  collapsed (so big files don't paint half a million nodes). The toolbar's
+  "Expand all" button is the escape hatch.
 
 ## Verification
 
@@ -93,6 +104,39 @@ Before declaring a change done:
    - Search, expand/collapse, copy-as-JSON, theme toggle, pagination.
 3. **Don't claim "verified"** if you only ran the syntax check — say so
    explicitly when the UI wasn't exercised.
+
+## Performance notes
+
+The viewer is intentionally simple, but its memory profile is dominated
+by **DOM node count**, not JS heap. Each JSON value becomes ~7 DOM elements
+(node, row, caret, key, chip, value wrapper, copy button), and KaTeX +
+marked output add many more nested elements per rich string. On a file
+with hundreds of records and long rich-text strings, the live page can
+easily reach tens of MB of DOM.
+
+What this means for new code:
+
+- Per-row event handlers close over their `value` parameter. For object /
+  array rows, that pins the entire subtree from GC. Prefer a single
+  delegated handler at the tree root over thousands of per-row closures
+  if you add new row-level interactions.
+- Rendering rich text (KaTeX/marked) is the per-string hotspot. Don't
+  re-render on every keystroke / scroll. The "raw" toggle currently keeps
+  both DOM trees mounted at once — be aware before adding more such
+  toggles.
+- Pagination caps the *rendered* records but the full parsed JSON stays
+  in JS heap regardless. Don't assume pagination is a memory ceiling.
+
+Unfinished mitigation candidates (don't implement speculatively, but keep
+in mind when something becomes a real problem):
+
+- Lazy children build: collapsed nodes today still build their child DOM
+  up front. Defer to first expansion to genuinely shrink the live tree.
+- `IntersectionObserver`-driven KaTeX / marked rendering for off-screen
+  rich strings.
+- Delegated copy-as-JSON handler at the tree root with `data-path` lookup
+  back into the original parsed data, so per-row closures stop pinning
+  subtrees.
 
 ## Sample data
 
