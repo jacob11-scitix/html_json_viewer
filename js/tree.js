@@ -135,7 +135,7 @@
     return `${parentPath}[${JSON.stringify(key)}]`;
   }
 
-  function buildNode(value, keyLabel, path) {
+  function buildNode(value, keyLabel, path, depth) {
     const type = typeOf(value);
     const node = document.createElement('div');
     node.className = 'node';
@@ -157,6 +157,10 @@
         node.classList.toggle('collapsed');
         caret.classList.toggle('collapsed');
       });
+      if (depth > 0) {
+        node.classList.add('collapsed');
+        caret.classList.add('collapsed');
+      }
     } else {
       caret.classList.add('leaf');
       caret.textContent = '·';
@@ -193,13 +197,14 @@
     if (hasChildren) {
       const children = document.createElement('div');
       children.className = 'children';
+      const childDepth = depth + 1;
       if (type === 'array') {
         value.forEach((item, i) => {
-          children.appendChild(buildNode(item, `[${i}]`, childPath(path, i, 'array')));
+          children.appendChild(buildNode(item, `[${i}]`, childPath(path, i, 'array'), childDepth));
         });
       } else {
         for (const k of Object.keys(value)) {
-          children.appendChild(buildNode(value[k], k, childPath(path, k, 'object')));
+          children.appendChild(buildNode(value[k], k, childPath(path, k, 'object'), childDepth));
         }
       }
       node.appendChild(children);
@@ -211,7 +216,7 @@
   function renderTree(value, rootPath) {
     const wrap = document.createElement('div');
     wrap.className = 'tree';
-    wrap.appendChild(buildNode(value, null, rootPath || 'root'));
+    wrap.appendChild(buildNode(value, null, rootPath || 'root', 0));
     return wrap;
   }
 
