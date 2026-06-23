@@ -1,0 +1,32 @@
+{
+  "title": "Demo document",
+  "description": "## Heading\n\nThis is **bold** and *italic*, with `inline code` and a [link](https://example.com).\n\n- bullet one\n- bullet two\n\n```python\nprint('hello')\n```",
+  "math_inline": "Einstein's famous equation: $E = mc^2$ — handy.",
+  "math_block": "Gaussian integral:\n\n$$\\int_{-\\infty}^{\\infty} e^{-x^2}\\,dx = \\sqrt{\\pi}$$",
+  "mixed_md_latex": "Solve $ax^2+bx+c=0$ via the quadratic formula:\n\n$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$\n\nWorks for **any** real coefficients.",
+  "plain_text": "Just a plain string — no markdown, no math.",
+  "numbers": {
+    "pi": 3.14159,
+    "e": 2.71828,
+    "infinity_safe": 1e308
+  },
+  "flags": {
+    "enabled": true,
+    "deprecated": false,
+    "value": null
+  },
+  "items": [
+    { "id": 1, "name": "alpha", "tags": ["a", "b"] },
+    { "id": 2, "name": "beta",  "tags": []         },
+    { "id": 3, "name": "gamma", "tags": ["x"]      }
+  ],
+  "nested": {
+    "level_1": {
+      "level_2": {
+        "level_3": {
+          "leaf": "deep value"
+        }
+      }
+    }
+  }
+}

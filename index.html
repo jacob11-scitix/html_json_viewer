@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON / JSONL Viewer</title>
+  <link rel="stylesheet" href="vendor/katex.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="vendor/marked.min.js" defer></script>
+  <script src="vendor/katex.min.js" defer></script>
+</head>
+<body>
+  <header class="toolbar">
+    <div class="toolbar-left">
+      <span class="brand">
+        <span class="brand-glyph">{ }</span>
+        <span class="brand-text">JSON / JSONL Viewer</span>
+      </span>
+    </div>
+    <div class="toolbar-center">
+      <label class="btn btn-primary" for="file-input">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Open file
+      </label>
+      <input id="file-input" type="file" accept=".json,.jsonl,.ndjson,.txt" hidden />
+
+      <button class="btn" id="paste-toggle" type="button">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+        Paste
+      </button>
+
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="search" type="search" placeholder="Search keys / values" autocomplete="off" />
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn icon-btn" id="expand-all" type="button" title="Expand all">⤢</button>
+      <button class="btn icon-btn" id="collapse-all" type="button" title="Collapse all">⤡</button>
+      <button class="btn icon-btn" id="theme-toggle" type="button" title="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="paste-panel" id="paste-panel" hidden>
+    <textarea id="paste-area" placeholder="Paste JSON or JSONL here…" spellcheck="false"></textarea>
+    <div class="paste-actions">
+      <button class="btn" id="paste-clear" type="button">Clear</button>
+      <button class="btn btn-primary" id="paste-render" type="button">Render</button>
+    </div>
+  </section>
+
+  <main id="viewer" class="viewer">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-card">
+        <div class="empty-glyph">⌘</div>
+        <h2>Drop a JSON or JSONL file</h2>
+        <p>…or click <b>Open file</b>, or <b>Paste</b> raw text.</p>
+        <p class="empty-hint">
+          Strings containing <code>**markdown**</code> or LaTeX like <code>$E=mc^2$</code> render inline.<br/>
+          Everything runs locally — no network needed.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <div id="drop-overlay" class="drop-overlay" hidden>
+    <div class="drop-card">
+      <div class="drop-glyph">⤓</div>
+      <div>Drop to load</div>
+    </div>
+  </div>
+
+  <footer class="statusbar">
+    <span id="status-path" class="status-path">root</span>
+    <span id="status-info" class="status-info"></span>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
