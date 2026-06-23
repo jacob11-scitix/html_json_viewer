@@ -145,7 +145,8 @@
     if (result.kind === 'json') {
       const tree = renderTree(result.data, 'root');
       els.viewer.appendChild(tree);
-      els.statusInfo.textContent = `${source} · JSON`;
+      const warn = result.warning ? ` · ${result.warning}` : '';
+      els.statusInfo.textContent = `${source} · JSON${warn}`;
     } else {
       const view = renderRecordsView(result.records);
       els.viewer.appendChild(view.element);
