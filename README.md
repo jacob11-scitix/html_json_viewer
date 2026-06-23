@@ -22,20 +22,3 @@ Just open `index.html` in a browser — double-click it, or:
 open index.html       # macOS
 xdg-open index.html   # Linux
 ```
-
-No server, no install step. If you'd rather serve over HTTP it works too
-(`python3 -m http.server`, `npx serve`, etc.), but it isn't required.
-
-## Repo layout
-
-```
-index.html
-css/styles.css
-js/  app.js  parser.js  tree.js  search.js  pagination.js  richtext.js
-vendor/  marked.min.js  katex.min.js  katex.min.css  katex-fonts/*.woff2
-samples/  demo.json  demo.jsonl
-```
-
-## License
-
-MIT — see `LICENSE`.
