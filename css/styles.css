@@ -167,6 +167,8 @@ body {
 }
 .btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
 .btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:disabled:hover { background: var(--bg-elev-2); border-color: var(--border); }
 .btn-primary {
   background: var(--accent-bg);
   border-color: var(--accent);

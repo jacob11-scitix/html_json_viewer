@@ -20,6 +20,7 @@
     searchNext:    document.getElementById('search-next'),
     expandAll:     document.getElementById('expand-all'),
     collapseAll:   document.getElementById('collapse-all'),
+    reload:        document.getElementById('reload'),
     themeToggle:   document.getElementById('theme-toggle'),
     dropOverlay:   document.getElementById('drop-overlay'),
     statusPath:    document.getElementById('status-path'),
@@ -27,6 +28,10 @@
   };
 
   let currentSearch = null;
+  // Last loaded source — used by the reload button. For files we keep the
+  // File handle; FileReader re-reads the current bytes from disk on each
+  // call, so a reload picks up edits made outside the page.
+  let lastLoaded = null;  // { kind: 'file', file } | { kind: 'paste' }
 
   // ---- Theme ----
   const THEME_KEY = 'json-viewer-theme';
@@ -48,7 +53,11 @@
   });
   els.pasteRender.addEventListener('click', () => {
     const text = els.pasteArea.value;
-    if (text.trim()) loadText(text, 'pasted');
+    if (text.trim()) {
+      lastLoaded = { kind: 'paste' };
+      updateReloadButton();
+      loadText(text, 'pasted');
+    }
   });
   els.pasteClear.addEventListener('click', () => {
     els.pasteArea.value = '';
@@ -94,10 +103,32 @@
 
   function readFile(file) {
     const reader = new FileReader();
-    reader.onload = () => loadText(String(reader.result), file.name);
+    reader.onload = () => {
+      lastLoaded = { kind: 'file', file };
+      updateReloadButton();
+      loadText(String(reader.result), file.name);
+    };
     reader.onerror = () => showError(`Could not read file: ${reader.error && reader.error.message || 'unknown error'}`);
     reader.readAsText(file);
   }
+
+  function updateReloadButton() {
+    els.reload.disabled = !lastLoaded;
+  }
+
+  els.reload.addEventListener('click', () => {
+    if (!lastLoaded) return;
+    // Reset to the default initial view: clear the search and let
+    // renderResult rebuild with all nodes collapsed and pagination on
+    // page 1. Read the file fresh so on-disk edits show up.
+    els.search.value = '';
+    if (lastLoaded.kind === 'file') {
+      readFile(lastLoaded.file);
+    } else if (lastLoaded.kind === 'paste') {
+      const text = els.pasteArea.value;
+      if (text.trim()) loadText(text, 'pasted');
+    }
+  });
 
   // ---- Search / expand / collapse ----
   let searchTimer = null;
