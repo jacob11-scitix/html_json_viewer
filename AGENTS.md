@@ -84,11 +84,9 @@ When adding a new module:
   the text character-by-character to skip over string literals. Do not
   replace it with a naive `/NaN/g`-style regex; that would corrupt user
   prose that happens to contain the word "NaN".
-- **Default fold state.** Non-root tree nodes start collapsed. `tree.js`
-  threads a `depth` argument through `buildNode` for this. Keep the root
-  expanded (so first paint shows the top-level shape) and everything below
-  collapsed (so big files don't paint half a million nodes). The toolbar's
-  "Expand all" button is the escape hatch.
+- **Default fold state.** All tree nodes (including the root) start
+  collapsed, so big files don't paint half a million nodes on first load.
+  The toolbar's "Expand all" button is the escape hatch.
 
 ## Verification
 
