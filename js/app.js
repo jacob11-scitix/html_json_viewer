@@ -4,7 +4,6 @@
   const { parse } = JV.parser;
   const { renderTree, setAllExpanded } = JV.tree;
   const { renderRecordsView } = JV.pagination;
-  const { applySearch } = JV.search;
 
   const els = {
     viewer:        document.getElementById('viewer'),
@@ -16,6 +15,9 @@
     pasteRender:   document.getElementById('paste-render'),
     pasteClear:    document.getElementById('paste-clear'),
     search:        document.getElementById('search'),
+    searchCount:   document.getElementById('search-count'),
+    searchPrev:    document.getElementById('search-prev'),
+    searchNext:    document.getElementById('search-next'),
     expandAll:     document.getElementById('expand-all'),
     collapseAll:   document.getElementById('collapse-all'),
     themeToggle:   document.getElementById('theme-toggle'),
@@ -23,6 +25,8 @@
     statusPath:    document.getElementById('status-path'),
     statusInfo:    document.getElementById('status-info'),
   };
+
+  let currentSearch = null;
 
   // ---- Theme ----
   const THEME_KEY = 'json-viewer-theme';
@@ -100,10 +104,45 @@
   els.search.addEventListener('input', () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
-      const root = currentTreeRoot();
-      if (root) applySearch(root, els.search.value);
+      if (currentSearch) currentSearch.setQuery(els.search.value);
     }, 120);
   });
+  els.search.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (!currentSearch) return;
+      // Flush any pending debounced query so Enter feels immediate.
+      clearTimeout(searchTimer);
+      if (currentSearch.state().query !== els.search.value.trim()) {
+        currentSearch.setQuery(els.search.value);
+      }
+      if (e.shiftKey) currentSearch.prev();
+      else currentSearch.next();
+    } else if (e.key === 'Escape' && els.search.value) {
+      els.search.value = '';
+      if (currentSearch) currentSearch.setQuery('');
+    }
+  });
+  els.searchPrev.addEventListener('click', () => { if (currentSearch) currentSearch.prev(); });
+  els.searchNext.addEventListener('click', () => { if (currentSearch) currentSearch.next(); });
+
+  function updateSearchUI(state) {
+    const has = state.query.length > 0;
+    els.searchCount.hidden = !has;
+    els.searchPrev.hidden = !has;
+    els.searchNext.hidden = !has;
+    if (!has) return;
+    if (state.total === 0) {
+      els.searchCount.textContent = '0/0';
+      els.searchCount.classList.add('no-matches');
+    } else {
+      const cur = state.cursor >= 0 ? state.cursor + 1 : 0;
+      els.searchCount.textContent = `${cur}/${state.total}`;
+      els.searchCount.classList.remove('no-matches');
+    }
+    els.searchPrev.disabled = state.total === 0;
+    els.searchNext.disabled = state.total === 0;
+  }
 
   els.expandAll.addEventListener('click', () => {
     const root = currentTreeRoot();
@@ -141,22 +180,38 @@
   function renderResult(result, source) {
     els.empty.hidden = true;
     els.viewer.innerHTML = '';
+    currentSearch = null;
 
     if (result.kind === 'json') {
       const tree = renderTree(result.data, 'root');
       els.viewer.appendChild(tree);
       const warn = result.warning ? ` · ${result.warning}` : '';
       els.statusInfo.textContent = `${source} · JSON${warn}`;
+      currentSearch = JV.search.create({
+        container: tree,
+        singleData: result.data,
+        rootPath: 'root',
+        onUpdate: updateSearchUI,
+      });
     } else {
-      const view = renderRecordsView(result.records);
+      const view = renderRecordsView(result.records, {
+        onRender: () => { if (currentSearch) currentSearch.onPageRendered(); },
+      });
       els.viewer.appendChild(view.element);
       const warn = result.warning ? ` · ${result.warning}` : '';
       els.statusInfo.textContent = `${source} · JSONL · ${result.records.length} records${warn}`;
+      currentSearch = JV.search.create({
+        container: view.element,
+        records: result.records,
+        pagination: view,
+        onUpdate: updateSearchUI,
+      });
     }
 
     if (els.search.value.trim()) {
-      const root = currentTreeRoot();
-      if (root) applySearch(root, els.search.value);
+      currentSearch.setQuery(els.search.value);
+    } else {
+      updateSearchUI(currentSearch.state());
     }
   }
 

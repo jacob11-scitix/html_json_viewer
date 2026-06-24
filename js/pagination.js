@@ -80,6 +80,23 @@
       return Math.max(1, Math.ceil(records.length / state.pageSize));
     }
 
+    function getPageRange() {
+      if (state.pageSize === 'All') return { start: 0, end: records.length };
+      const start = (state.page - 1) * state.pageSize;
+      const end = Math.min(records.length, start + state.pageSize);
+      return { start, end };
+    }
+
+    function jumpToRecord(idx) {
+      if (idx < 0 || idx >= records.length) return;
+      if (state.pageSize === 'All') return;
+      const newPage = Math.floor(idx / state.pageSize) + 1;
+      if (newPage !== state.page) {
+        state.page = newPage;
+        render();
+      }
+    }
+
     function pageSlice() {
       if (state.pageSize === 'All') return records.map((r, i) => [i, r]);
       const start = (state.page - 1) * state.pageSize;
@@ -134,7 +151,7 @@
 
     render();
 
-    return { element: root, refresh: render };
+    return { element: root, refresh: render, getPageRange, jumpToRecord };
   }
 
   JV.pagination = { renderRecordsView };

@@ -231,5 +231,5 @@
     });
   }
 
-  JV.tree = { renderTree, setAllExpanded, typeOf, stringify };
+  JV.tree = { renderTree, setAllExpanded, typeOf, stringify, childPath };
 })(window.JV = window.JV || {});
